@@ -36,6 +36,7 @@ const run = async () => {
     });
 
     app.patch("/todo/:id", async (req, res) => {
+      console.log(req.body);
       const id = req.params.id;
       const todo = req.body;
       const result = await todoCollection.updateOne(
