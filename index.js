@@ -56,6 +56,7 @@ const run = async () => {
       const result = await todoCollection.deleteOne({ _id: ObjectId(id) });
       res.send({ status: true, data: result });
     });
+    // comment add
     app.put("/todo/:id", async (req, res) => {
       try {
         const id = req.params.id;
