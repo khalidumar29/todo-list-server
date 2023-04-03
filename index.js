@@ -36,7 +36,6 @@ const run = async () => {
     });
 
     app.patch("/todo/:id", async (req, res) => {
-      console.log(req.body);
       const id = req.params.id;
       const todo = req.body;
       const result = await todoCollection.updateOne(
@@ -56,6 +55,20 @@ const run = async () => {
       const id = req.params.id;
       const result = await todoCollection.deleteOne({ _id: ObjectId(id) });
       res.send({ status: true, data: result });
+    });
+    app.put("/todo/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const updatedTodo = await todoCollection.findOneAndUpdate(
+          { _id: ObjectId(id) },
+          { $set: req.body },
+          { returnOriginal: false }
+        );
+        res.json(updatedTodo);
+      } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server Error");
+      }
     });
   } finally {
   }
