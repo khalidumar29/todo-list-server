@@ -16,11 +16,38 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+// jwt authentication
+const jwt = require("jsonwebtoken");
+
+const authMiddleware = (req, res, next) => {
+  // check if the Authorization header is present
+  const authHeader = req.headers["authorization"];
+  if (!authHeader) {
+    return res.status(401).json({ error: "Missing Authorization header" });
+  }
+
+  // extract the token from the header
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "Missing token" });
+  }
+
+  try {
+    // verify the token and extract the user data
+    const decoded = jwt.verify(token, process.env.TOKEN);
+    req.user = decoded.user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+};
+
 const run = async () => {
   try {
     const db = client.db("moon-tech");
     const productCollection = db.collection("products");
     const todoCollection = db.collection("todos");
+    const userCollection = db.collection("user");
 
     app.get("/products", async (req, res) => {
       const cursor = productCollection.find({});
@@ -29,13 +56,45 @@ const run = async () => {
       res.send({ status: true, data: product });
     });
 
-    app.post("/todo", async (req, res) => {
+    app.post("/signup", async (req, res) => {
+      const { email, password } = req.body;
+
+      try {
+        const user = { email, password };
+        const result = userCollection.insertOne(user);
+        // generate a JWT token and send it to the client
+        const token = jwt.sign({ user }, process.env.TOKEN, {
+          expiresIn: "3h",
+        });
+        res.send({ status: true, data: result, token });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+
+    app.post("/login", async (req, res) => {
+      const user = req.body;
+
+      try {
+        // generate a JWT token and send it to the client
+        const token = jwt.sign({ user }, process.env.TOKEN, {
+          expiresIn: "3h",
+        });
+        res.json({ token });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+
+    app.post("/todo", authMiddleware, async (req, res) => {
       const todo = req.body;
       const result = await todoCollection.insertOne(todo);
       res.send({ status: true, data: result });
     });
 
-    app.patch("/todo/:id", async (req, res) => {
+    app.patch("/todo/:id", authMiddleware, async (req, res) => {
       const id = req.params.id;
       const todo = req.body;
       const result = await todoCollection.updateOne(
@@ -45,19 +104,19 @@ const run = async () => {
       res.send({ status: true, data: result });
     });
 
-    app.get("/todo", async (req, res) => {
+    app.get("/todo", authMiddleware, async (req, res) => {
       const cursor = todoCollection.find({});
       const todos = await cursor.toArray();
       res.send({ status: true, data: todos });
     });
 
-    app.delete("/todo/:id", async (req, res) => {
+    app.delete("/todo/:id", authMiddleware, async (req, res) => {
       const id = req.params.id;
       const result = await todoCollection.deleteOne({ _id: ObjectId(id) });
       res.send({ status: true, data: result });
     });
     // comment add
-    app.put("/todo/:id", async (req, res) => {
+    app.put("/todo/:id", authMiddleware, async (req, res) => {
       try {
         const id = req.params.id;
         const updatedTodo = await todoCollection.findOneAndUpdate(
