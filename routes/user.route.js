@@ -32,7 +32,7 @@ router.route("/signup").post(async (req, res) => {
 
 router.route("/login").post(async (req, res) => {
   const user = req.body;
-
+  console.log(user);
   try {
     // generate a JWT token and send it to the client
     const token = jwt.sign({ user }, process.env.TOKEN, {
