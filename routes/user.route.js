@@ -13,7 +13,7 @@ const client = new MongoClient(uri, {
 const db = client.db("moon-tech");
 const userCollection = db.collection("user");
 
-router.route("signup").post(async (req, res) => {
+router.route("/signup").post(async (req, res) => {
   const { email, password } = req.body;
 
   try {
