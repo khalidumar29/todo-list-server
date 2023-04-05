@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const jwt = require("jsonwebtoken");
 
 // db Connection
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tcfxjaz.mongodb.net/?retryWrites=true&w=majority`;
@@ -29,7 +30,7 @@ router.route("signup").post(async (req, res) => {
   }
 });
 
-router.route("login").post(async (req, res) => {
+router.route("/login").post(async (req, res) => {
   const user = req.body;
 
   try {
