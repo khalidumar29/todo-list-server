@@ -15,7 +15,7 @@ const userCollection = db.collection("user");
 
 router.route("/singup").post(async (req, res) => {
   const { email, password } = req.body;
-
+  console.log(req.body);
   try {
     const user = { email, password };
     const result = userCollection.insertOne(user);

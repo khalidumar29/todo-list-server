@@ -32,21 +32,14 @@ dynamic operation for todo
 
 router
   .route("/:id")
-  .patch(authMiddleware, async (req, res) => {
-    const id = req.params.id;
-    const todo = req.body;
-    const result = await todoCollection.updateOne(
-      { _id: ObjectId(id) },
-      { $set: todo }
-    );
-    res.send({ status: true, data: result });
-  })
+
   .delete(authMiddleware, async (req, res) => {
     const id = req.params.id;
     const result = await todoCollection.deleteOne({ _id: ObjectId(id) });
     res.send({ status: true, data: result });
   })
   .put(authMiddleware, async (req, res) => {
+    console.log(req.params.id);
     try {
       const id = req.params.id;
       const updatedTodo = await todoCollection.findOneAndUpdate(
