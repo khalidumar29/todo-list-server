@@ -9,7 +9,11 @@ const productRoutes = require("./routes/product.route");
 
 // cors & middleware
 app.use(cors());
-app.use(express.json());
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://todo-list-bice-ten.vercel.app/"],
+  })
+);
 
 // routes
 app.use("/todo", todoRoutes);
